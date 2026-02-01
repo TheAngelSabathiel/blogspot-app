@@ -63,7 +63,7 @@ onBeforeMount(fetchPost);
             <div class="d-flex flex-wrap align-items-center gap-3 mb-4">
               <div class="toast-controls">
                 <button @click="handleLike" class="btn-toast">🍞</button>
-                <span class="count">{{ post.likes?.length || 0 }}</span>
+                <span class="count">{{ post.likes.length || 0 }}</span>
                 <button @click="handleDislike" class="btn-toast">🔥</button>
               </div>
               <span class="author-badge">By {{ post.userId.username }}</span>
@@ -89,7 +89,7 @@ onBeforeMount(fetchPost);
               <div v-for="comment in post.comments" :key="comment.id" class="comment-card mb-3 p-3">
                 <div class="row align-items-start">
                   <div class="col">
-                    <h6 class="comment-user">{{ comment.username }}</h6>
+                    <h6 class="comment-user">{{ comment.commentingUserId }}</h6>
                     <p class="comment-text mb-0">{{ comment.text }}</p>
                   </div>
                   <div class="col-auto d-flex flex-column flex-sm-row gap-1">

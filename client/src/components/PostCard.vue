@@ -292,4 +292,50 @@ async function handleEditPost(e) {
   transform: scale(1.05);
   filter: brightness(1.1);
 }
+
+/* --- Modal & Forms --- */
+.modal-content {
+  background-color: var(--brand-brown);
+  border: 2px solid var(--brand-orange);
+  border-radius: 24px;
+  color: var(--brand-cream);
+}
+
+.modal-title-custom {
+  font-family: 'Bevan', serif;
+  color: var(--brand-orange);
+}
+
+.form-input-custom {
+  background: var(--brand-cream);
+  font-family: 'Archivo Narrow', sans-serif;
+  border-radius: 10px;
+  border: 2px solid transparent;
+}
+
+.form-input-custom:focus {
+  border-color: var(--brand-orange);
+  box-shadow: 0 0 10px rgba(217, 115, 36, 0.4);
+}
+
+/* --- Buttons --- */
+.btn-custom {
+  font-family: 'League Spartan', sans-serif;
+  font-weight: 700;
+  border-radius: 12px;
+  padding: 8px 20px;
+  transition: var(--transition);
+}
+
+.btn-primary.btn-custom {
+  background: var(--brand-orange);
+  border: none;
+  color: var(--brand-cream);
+}
+
+.btn-primary.btn-custom:hover:not(:disabled) {
+  background: var(--brand-yellow);
+  color: var(--brand-brown);
+  transform: translateY(-2px);
+}
 </style>

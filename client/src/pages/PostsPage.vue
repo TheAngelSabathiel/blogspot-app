@@ -2,6 +2,9 @@
 import { ref, onMounted } from "vue";
 import api from "../api";
 import PostCard from "../components/PostCard.vue";
+import { useGlobalStore } from "../stores/global";
+
+const {user} = useGlobalStore();
 
 const allPosts = ref([]);
 const isLoading = ref(true);
@@ -40,7 +43,7 @@ onMounted(fetchPosts);
         v-for="post in allPosts" 
         :key="post._id"
       >
-        <PostCard :postData="post" />
+        <PostCard :postData="post" :userData="user.id" @loadPosts="fetchPosts"/>
       </div>
     </div>
 

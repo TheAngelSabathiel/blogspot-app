@@ -1,7 +1,37 @@
 <script setup>
-const { postData } = defineProps({
-    postData : Object
+import {Notyf} from "notyf";
+import api from "../api";       
+import {ref} from "vue";
+import { uploadPostPic, deleteUploadIfError } from "../cloudinaryFunc.js";
+
+const notyf = new Notyf();
+const { postData, userData } = defineProps({
+    postData : Object,
+    userData : String
 });
+
+    const isLoading = ref(false);
+    const isEnabled = ref(false);
+    const title = ref(postData.title);
+    const post = ref(postData.content);
+    const picture = ref(null);
+    const blogPosts = ref([]);
+    const imagePreview = ref(postData.picture?.path || null);
+
+const emit = defineEmits(['loadPosts']);
+
+async function handleFileUpload(event) {
+        const file = event.target.files[0];
+      if (file) {
+        picture.value = file;
+        imagePreview.value = URL.createObjectURL(file);
+      }
+    }
+
+function removeImage() {
+        picture.value = null;
+        imagePreview.value = null;
+    }
 
 function handleContent(content) {
     if (content.length > 40) {
@@ -11,11 +41,92 @@ function handleContent(content) {
     return content;
 }
 
+function prelimEdit() {
+    title.value = postData.title;
+    post.value = postData.content;
+    picture.value = null;
+    imagePreview.value = postData.picture?.path || null;
+}
+
+async function deletePost(postData) {
+    if (!confirm(`Are you sure you want to delete this post?`)) {
+                return;
+            }     
+            console.log(postData._id);
+      try {
+        const response = await api.delete(`/blogPosts/delete/${postData._id}`);
+        
+        notyf.success(response.data.message);
+      } catch (error) {
+        notyf.error(error.response?.data?.message || "Deletion failed.");
+      } finally {
+        emit("loadPosts");
+      }
+}
+
+async function handleEditPost(e) {
+    e.preventDefault();
+    isLoading.value = true;
+
+    let pictureData = null;
+    let deleteToken = null;
+
+    try {
+        if (picture.value) {
+            const uploadRes = await uploadPostPic(picture.value);
+            pictureData = uploadRes.pictureData;
+            deleteToken = uploadRes.deleteToken;
+        }
+
+
+        const requests = [
+            api.put(`/blogPosts/update/${postData._id}`, {
+                title: title.value,
+                content: post.value
+            })
+        ];
+
+        if (pictureData) {
+            requests.push(
+                api.patch(`/blogPosts/update-pic/${postData._id}`, {
+                    picture: pictureData
+                })
+            );
+        }
+
+        const responses = await Promise.all(requests);
+
+        // 4. Success Handling
+        const textSuccess = responses[0].status === 200;
+        const picSuccess = requests.length > 1 ? responses[1].status === 200 : true;
+
+        if (textSuccess && picSuccess) {
+            notyf.success("Post updated successfully!");
+            const closeBtn = document.querySelector('#editPost [data-bs-dismiss="modal"]');
+            closeBtn?.click();
+        }
+
+    } catch (error) {
+        if (deleteToken) {
+            await deleteUploadIfError(deleteToken);
+        }
+        const errMsg = error.response?.data?.message || "An error occurred. Please try again.";
+        notyf.error(errMsg);
+    } finally {
+        emit("loadPosts");
+        isLoading.value = false;
+    }
+}
+
 </script>
 
 <template>
 <div class="card card-custom">
-  <img :src="postData.picture.path" class="card-img-top card-img-custom" style="width : 100%" v-if="postData.picture !== null">
+    <div class="image-wrapper">
+          <img :src="postData.picture.path" class="card-img-top card-img-custom" style="width : 100%" v-if="postData.picture !== null">
+          <button class="delete-post text-danger fw-bold" @click="deletePost(postData)" v-if="userData === postData.userId._id">X</button>
+    </div> 
+
   <div class="card-body">
     <h4 class="card-title text-sub-4">{{ postData.title }}</h4>
     <h6 class="card-text text-sub-6">Written by: {{ postData.userId.username }}</h6>
@@ -25,15 +136,67 @@ function handleContent(content) {
         <div class="col-3">
             <router-link :to="{path : `/post/${postData._id}`}" class="btn btn-custom btn-primary">View</router-link>
         </div>
-        <div class="col-3">
-            <router-link to="/" class="btn btn-custom btn-secondary">Edit</router-link>
+        <div class="col-3" v-if="userData === postData.userId._id">
+            <button type="button" class="btn btn-custom btn-secondary" data-bs-toggle="modal" data-bs-target="#editPost" @click="prelimEdit">Edit</button>
         </div>
     </div>
   </div>
 </div>
+
+    <!-- Edit Form Modal -->
+    <div class="modal fade modal-custom container-fluid" id="editPost" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="addNewPostLabel">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5 modal-title-custom" id="addNewPostLabel">Edit Post</h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body modal-body-custom">
+            <form @submit="handleEditPost">
+                <div class="mb-3">
+                    <label class="form-label small text-text fw-bold">Post Title</label>
+                <input type="text" class="form-control form-input-custom" placeholder="Title" v-model="title">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label small text-text fw-bold">Post Body</label>
+                <textarea type="text" class="form-control form-input-custom" rows=10 placeholder="Post" v-model="post">
+                </textarea>
+                </div>
+                <div class="mb-3">
+                            <label class="form-label small text-text fw-bold">Post Picture</label>
+                            <input type="file" class="form-control" accept="image/*" @change="handleFileUpload"/>
+                
+                            <div v-if="imagePreview" class="mt-2 text-center">
+                                <img :src="imagePreview" class="img-thumbnail" style="max-height: 400px;" />
+                                <div class="mt-2">
+                                    <button type="button" class="btn btn-sm btn-outline-danger" @click="removeImage">
+                                    Remove Selected Image
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                <div class="mb-3 d-flex justify-content-end">
+                    <button type="button" class="btn btn-secondary btn-custom ms-2" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary btn-custom ms-2">
+                        <span v-show="!isLoading">Edit Post</span>
+                        <div class="spinner-grow" v-show="isLoading"></div>
+                    </button>
+                </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
 </template>
 
 <style scoped>
+.image-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+
+
 /* Color Palette */
 :deep() {
   --brand-brown: #4B3633;
@@ -41,6 +204,14 @@ function handleContent(content) {
   --brand-yellow: #E8C547;
   --brand-cream: #F2E9DC;
   --transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.delete-post {
+    position: absolute;
+    top : 5px;
+    right : 10px;
+    background: none;
+    border : none;
 }
 
 .card-custom {

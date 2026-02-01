@@ -2,13 +2,14 @@
 	import { useGlobalStore } from "../stores/global";
 	import { Notyf } from "notyf";
 	import api from "../api";
-	import { watch, ref, onBeforeMount } from "vue";
+	import { watch, ref, onBeforeMount, computed } from "vue";
 	import PostCard from "../components/PostCard.vue";
+	import { useRoute } from 'vue-router';
 	let { user, getUserDetails } = useGlobalStore();
-	import * as bootstrap from 'bootstrap';
 	import { uploadPostPic, deleteUploadIfError } from "../cloudinaryFunc.js";
 
 	const notyf = new Notyf();
+	const route = useRoute();
 
 	const isLoading = ref(false);
 	const isEnabled = ref(false);
@@ -17,6 +18,7 @@
 	const picture = ref(null);
 	const blogPosts = ref([]);
 	const imagePreview = ref(null);
+	const userDataId = ref(user.id);
 
 	async function handleAddPost(e) {
 		e.preventDefault();
@@ -84,15 +86,16 @@
 	onBeforeMount(async () => {
 
 		await getUserDetails(localStorage.getItem("token"));
-		const res = await api.get(`/blogPosts/blogs/${user.id}`);
+		const res = await api.get(`/blogPosts/blogs/${route.params.userId}`);
 		blogPosts.value = res.data;
 	});
 
 	async function loadProfilePage() {
-		const res = await api.get(`/blogPosts/blogs/${user.id}`);
+		const res = await api.get(`/blogPosts/blogs/${route.params.userId}`);
 		blogPosts.value = res.data;
 	}
 
+	const currentUser = computed(() => useGlobalStore.user);
 
 </script>
 
@@ -101,9 +104,9 @@
 		<div class="row g-2 d-flex justify-content-center align-items-center">
 			<div class="col-2 p-3 profile-img-wrapper">
 				<img :src="user.picture?.path || `/images/placeholderuser.jpg`" class="img-fluid rounded-circle profile-img">
-				<button class="edit-avatar-badge" title="Change Photo">
+<!-- 				<button class="edit-avatar-badge" title="Change Photo">
             		&#9999;
-          		</button>
+          		</button> -->
 			</div>
 			<div class="col-1">
 				
@@ -124,7 +127,7 @@
 			class="col-12 col-md-6 col-lg-4"
 			v-for="post in blogPosts"
 			>
-				<PostCard :postData="post"/>
+				<PostCard :postData="post" :userData="user.id" @loadPosts="loadProfilePage"/>
 			</div>
 		</div>
 	</div>
@@ -225,9 +228,9 @@
 
 /* --- The Avatar & Badge Positioning --- */
 .profile-img-wrapper {
-  position: relative; /* REQUIRED for the badge to stick to the image */
+  position: relative; 
   display: inline-block;
-  width: 130px; /* Fixed size ensures the badge stays in place */
+  width: 130px; 
   height: 130px;
 }
 

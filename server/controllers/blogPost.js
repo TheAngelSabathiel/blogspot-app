@@ -22,6 +22,7 @@ module.exports.createBlogPost = (req, res) => {
 
 module.exports.getBlogPost = (req, res) => {
 	BlogPost.findById(req.params.blogPostId)
+	.populate("userId", "username")
 	.then(post => {
 		if (!post) return res.status(404).send({ message : "Post not found."});
 
@@ -32,6 +33,7 @@ module.exports.getBlogPost = (req, res) => {
 
 module.exports.getBlogPostsPerUser = (req, res) => {
 	BlogPost.find({ userId : req.params.userId })
+	.populate("userId", "username")
 	.sort({ creationDate : -1})
 	.then(posts => {
 		return res.status(200).send(posts);

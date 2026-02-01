@@ -92,7 +92,7 @@ async function handleRegister(e) {
                         oninput="this.value = this.value.replace(/\s|@/g, '')" class="form-control form-input-custom" placeholder="Username (No spaces and '@')" v-model="username">
                     </div>
                     <div class="mb-3">
-                        <label class="form-label small text-text fw-bold">Email/Username</label>
+                        <label class="form-label small text-text fw-bold">Email Address</label>
                         <input type="email" class="form-control form-input-custom" placeholder="Email/Username" v-model="email">
                     </div>
                     <div class="mb-3">

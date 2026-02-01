@@ -45,9 +45,8 @@ const { user } = useGlobalStore();
 
 <style scoped>
 .hero-container {
-  min-height: 85vh;
+  min-height: 90vh;
   background-color: #F2E9DC; /* Your brand-cream */
-  padding: 100px 0;
   position: relative;
   overflow: hidden;
 }

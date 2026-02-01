@@ -49,5 +49,114 @@ const { user } = useGlobalStore();
 </template>
 
 <style scoped>
+@import url('https://fonts.googleapis.com/css2?family=Bevan&family=League+Spartan:wght@400;700&display=swap');
 
+/* Color Variables */
+:deep() {
+  --brand-brown: #4B3633;
+  --brand-orange: #D97324;
+  --brand-yellow: #E8C547;
+  --brand-cream: #F2E9DC;
+  --nav-transition: all 0.3s ease;
+}
+
+.navbar-custom {
+  background-color: var(--brand-brown);
+  border-bottom: 3px solid var(--brand-orange);
+  padding: 0.75rem 1rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+/* Logo & Brand Text */
+.navbar-brand {
+  font-family: 'Bevan', serif;
+  font-size: 1.4rem;
+  letter-spacing: 1px;
+  display: flex;
+  align-items: center;
+  transition: var(--nav-transition);
+}
+
+.navbar-brand:hover {
+  transform: scale(1.02);
+}
+
+.burnt-text { color: var(--brand-cream); }
+.and-text { color: var(--brand-yellow); padding: 0 5px; }
+.orange-text { color: var(--brand-orange); }
+
+/* Navigation Links */
+.nav-link {
+  font-family: 'League Spartan', sans-serif;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--brand-cream) !important;
+  margin: 0 10px;
+  position: relative;
+  transition: var(--nav-transition);
+}
+
+/* Sleek Underline Hover Effect */
+.nav-link::after {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 3px;
+  bottom: -5px;
+  left: 0;
+  background-color: var(--brand-orange);
+  transition: var(--nav-transition);
+}
+
+.nav-link:hover::after {
+  width: 100%;
+}
+
+.nav-link:hover {
+  color: var(--brand-yellow) !important;
+  transform: translateY(-2px);
+}
+
+/* Toggler / Hamburger Menu */
+.nav-toggler-custom {
+  border: 2px solid var(--brand-orange);
+  padding: 5px;
+}
+
+.nav-toggler-custom:focus {
+  box-shadow: 0 0 10px var(--brand-orange);
+}
+
+/* Offcanvas (Mobile Menu) Styling */
+.offcanvas {
+  background-color: var(--brand-brown) !important;
+  border-left: 3px solid var(--brand-orange);
+}
+
+.offcanvas-title {
+  font-family: 'Bevan', serif;
+  color: var(--brand-orange);
+}
+
+.btn-close-white {
+  filter: invert(1) grayscale(100%) brightness(200%);
+}
+
+/* Active Link State */
+.router-link-active.nav-link::after {
+  width: 100%;
+  background-color: var(--brand-yellow);
+}
+
+@media (max-width: 991px) {
+  .nav-link {
+    padding: 15px 0;
+    border-bottom: 1px solid rgba(242, 233, 220, 0.1);
+    margin: 0;
+  }
+  
+  .nav-link::after {
+    display: none; /* Hide underline animation on mobile for cleaner look */
+  }
+}
 </style>
